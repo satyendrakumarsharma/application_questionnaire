@@ -28,13 +28,15 @@ class ApplicationFactory:
         question = Question.question_cache.get(app_question)
         if question is None:
             question = Question(1, app_question, '')
+        Question.question_cache.update({app_question: question})
         return question
 
     @staticmethod
     def __fetch_answer(app_answer):
-        answers = Answer.answer_cache.get(app_answer)
-        if answers is None:
-            answers = Answer(1, app_answer)
-        return answers
+        answer = Answer.answer_cache.get(app_answer)
+        if answer is None:
+            answer = Answer(1, app_answer)
+            Answer.answer_cache.update({app_answer: answer})
+        return answer
 
 
