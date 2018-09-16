@@ -1,22 +1,30 @@
 class ApplicationData:
     """Represents each application and contains the corresponding questions and their answers."""
-    def __init__(self):
+
+    def __init__(self, question, answers):
         self.__app_id = -1
         self.__app_name = ''
-        self.__questionnaire = {}
+        self.__questionnaire.update({question: answers})
 
 
 class Question:
     """The questions"""
-    def __init__(self):
-        self.__q_id = -1
-        self.__question = ''
-        self.__section = -0.0
+
+    question_cache = {}
+
+    def __init__(self, q_id, question, section):
+        self.__q_id = q_id
+        self.__question = question
+        self.__section = section
 
 
 class Answer:
     """The answers"""
-    def __init__(self):
-        self.__a_id = -1
-        self.__answer = ''
+
+    answer_cache = {}
+
+    def __init__(self, a_id, answer):
+        self.__a_id = a_id
+        self.__answer = answer
+
 
