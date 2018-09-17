@@ -1,6 +1,7 @@
 from app_io import *
 from factory import *
 from model import *
+from multiprocessing import Pool
 
 
 er = ExcelReader('S:\\DEV\\Temp\\apps.xlsx')
@@ -34,13 +35,20 @@ mdr = MasterDocumentReader()
 #     print(par.text)
 
 
-for sec in mdr.doc.sections:
-    print(sec)
+def process_applications():
+    for app_name, app_data in ApplicationFactory.app_cache.items():
+        print(app_name + ' processing...')
+        mdr.feed_application(app_data)
+        mdr.save()
 
 
-print(mdr.doc.sections[0])
+    # for sec in mdr.doc.sections:
+    #     print(sec)
+    #     mdr.save()
 
-mdr.save()
 
+# if __name__ == '__main__':
+#     p = Pool(5)
+#     print(p.map(process_applications, []))
 
-
+process_applications()

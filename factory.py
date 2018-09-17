@@ -14,20 +14,25 @@ class ApplicationFactory:
 
         app_data = ApplicationFactory.app_cache.get(app_name)
 
+        question = ApplicationFactory.__fetch_question(app_question)
+
+        answers = []
+
+        for app_answer in app_answers.split(','):
+            answers.append(ApplicationFactory.__fetch_answer(app_answer))
+
         if app_data is None:
             # a new app_data is needed only when it is not cached in dict
-            question = ApplicationFactory.__fetch_question(app_question)
-            answers = ()
-            for app_answer in app_answers.split(','):
-                answers += ApplicationFactory.__fetch_answer(app_answer)
-            app_data = ApplicationData(question, answers)
+            app_data = ApplicationData(app_name, question, answers)
             ApplicationFactory.app_cache.update({app_name: app_data})
+        else:
+            app_data.update_questionnaire(question, answers)
 
     @staticmethod
     def __fetch_question(app_question):
         question = Question.question_cache.get(app_question)
         if question is None:
-            question = Question(1, app_question, '')
+            question = Question(app_question, '')
         Question.question_cache.update({app_question: question})
         return question
 
@@ -35,7 +40,7 @@ class ApplicationFactory:
     def __fetch_answer(app_answer):
         answer = Answer.answer_cache.get(app_answer)
         if answer is None:
-            answer = Answer(1, app_answer)
+            answer = Answer(app_answer)
             Answer.answer_cache.update({app_answer: answer})
         return answer
 

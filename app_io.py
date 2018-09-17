@@ -3,6 +3,10 @@ import docx
 import docx.section
 import docx.shared
 import docx.document
+import logging
+
+logging.basicConfig(level=logging.INFO, filename='resources\\info.log')
+logger = logging.getLogger('Application IO')
 
 
 class ExcelReader:
@@ -36,9 +40,19 @@ class ExcelReader:
 
 
 class MasterDocumentReader:
+    """This class handles the operations related to master document"""
+
     def __init__(self):
         self.doc = docx.Document('resources\\master_document.docx')
+        self.__app_name = ''
+
+    def feed_application(self, app_data):
+        self.__app_name = app_data.app_name
+        logger.info(f'created document for {self.__app_name}')
+        pass
 
     def save(self):
-        self.doc.save('resources\\child.docx')
+        output_file = f'resources\\{self.__app_name}child.docx'
+        logger.info(output_file + ' created!')
+        self.doc.save(output_file)
 
