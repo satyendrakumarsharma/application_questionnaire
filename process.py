@@ -4,7 +4,8 @@ from model import *
 from multiprocessing import Pool
 
 
-er = ExcelReader('S:\\DEV\\Temp\\apps.xlsx')
+# Read the input Excel file and generate the application-data objects.
+er = ExcelReader('resources\\DataInput.xlsx')
 
 
 for app_entry in er.fetch_all_rows():
@@ -19,7 +20,7 @@ for app_entry in er.fetch_all_rows():
 #########################
 
 
-mdr = MasterDocumentReader()
+mdr = MasterDocumentReader('resources\\master_document.docx')
 
 # answer = {
 #     'a3.4' : 'AchhaiWaliApplication',
@@ -37,10 +38,9 @@ mdr = MasterDocumentReader()
 
 def process_applications():
     for app_name, app_data in ApplicationFactory.app_cache.items():
-        print(app_name + ' processing...')
+        logger.info(app_name + ' processing...')
         mdr.feed_application(app_data)
         mdr.save()
-
 
     # for sec in mdr.doc.sections:
     #     print(sec)

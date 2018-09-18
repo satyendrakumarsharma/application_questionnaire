@@ -1,4 +1,5 @@
 from model import *
+from utils import *
 
 
 class ApplicationFactory:
@@ -12,13 +13,21 @@ class ApplicationFactory:
         app_question = app_entry[1]
         app_answers = app_entry[2]
 
+        logger.info('>>[ROW]<< ' + app_name + ' : ' + app_question + ' : ' + app_answers)
+
+        if is_empty(app_name) or is_empty(app_question):
+            logger.info('^^^^ Empty Application questionnaire')
+            return
+
         app_data = ApplicationFactory.app_cache.get(app_name)
 
         question = ApplicationFactory.__fetch_question(app_question)
 
         answers = []
 
-        for app_answer in app_answers.split(','):
+        segregated_answers = [] if is_empty(app_answers) else app_answers.split(',')
+
+        for app_answer in segregated_answers:
             answers.append(ApplicationFactory.__fetch_answer(app_answer))
 
         if app_data is None:
@@ -43,5 +52,3 @@ class ApplicationFactory:
             answer = Answer(app_answer)
             Answer.answer_cache.update({app_answer: answer})
         return answer
-
-
