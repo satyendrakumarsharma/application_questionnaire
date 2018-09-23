@@ -13,22 +13,24 @@ class ApplicationFactory:
         app_question = app_entry[1]
         app_answers = app_entry[2]
 
-        logger.info('>>[ROW]<< ' + app_name + ' : ' + app_question + ' : ' + app_answers)
+        print('>>[ROW]<< ' + app_name + ' : ' + app_question + ' : ' + app_answers)
 
         if is_empty(app_name) or is_empty(app_question):
-            logger.info('^^^^ Empty Application questionnaire')
+            print('^^^^ Empty Application questionnaire')
             return
-
-        app_data = ApplicationFactory.app_cache.get(app_name)
 
         question = ApplicationFactory.__fetch_question(app_question)
 
         answers = []
 
+        # TODO for LargeText type of Question : Use the entire answer text (without splitting)
+
         segregated_answers = [] if is_empty(app_answers) else app_answers.split(',')
 
         for app_answer in segregated_answers:
             answers.append(ApplicationFactory.__fetch_answer(app_answer))
+
+        app_data = ApplicationFactory.app_cache.get(app_name)
 
         if app_data is None:
             # a new app_data is needed only when it is not cached in dict
@@ -38,17 +40,19 @@ class ApplicationFactory:
             app_data.update_questionnaire(question, answers)
 
     @staticmethod
-    def __fetch_question(app_question):
-        question = Question.question_cache.get(app_question)
+    def __fetch_question(question_value):
+        question = Question.cache_value.get(question_value)
         if question is None:
-            question = Question(app_question, '')
-        Question.question_cache.update({app_question: question})
+            question = Question(123, question_value, QuestionType.LARGE_TEXT, '2.4', '<<$Application_Name>>')
+            # TODO Dynamically from Config
+        Question.cache_value.update({question_value: question})
         return question
 
     @staticmethod
     def __fetch_answer(app_answer):
         answer = Answer.answer_cache.get(app_answer)
         if answer is None:
-            answer = Answer(app_answer)
+            answer = Answer(456, app_answer)
+            # TODO Dynamically from Config
             Answer.answer_cache.update({app_answer: answer})
         return answer

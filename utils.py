@@ -3,7 +3,8 @@ import logging
 
 
 logging.basicConfig(level=logging.INFO, filename='logs\\info.log')
-logger = logging.getLogger('Application IO')
+logger_io = logging.getLogger('IO')
+logger_process = logging.getLogger('process')
 
 
 def is_empty(string):

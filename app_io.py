@@ -1,8 +1,6 @@
 import openpyxl
-import docx
-import docx.section
-import docx.shared
-import docx.document
+import copy
+from docx import Document
 from utils import *
 
 
@@ -11,10 +9,9 @@ class ExcelReader:
 
     def __init__(self, filename, read_only=True, max_row=None, max_col=None):
         self.__workbook = openpyxl.load_workbook(filename, read_only)
-        self.__sheet = self.__workbook.active
+        self.__sheet = self.__workbook.active   # TODO read only the first sheet
         self.__max_row = max_row
         self.__max_col = max_col
-        self.__rows = []
 
     def fetch_all_rows(self):
         row_end = (self.__sheet.max_row if self.__max_row is None else self.__max_row) + 1
@@ -27,7 +24,6 @@ class ExcelReader:
             row = []
             for ci in range(1, col_end):
                 row.append(str(self.__sheet.cell(row=ri, column=ci).value).strip())
-            self.__rows.append(tuple(row))  # each row shall be immutable (viz. tuple)
             yield tuple(row)
         # return rows
 
@@ -36,20 +32,22 @@ class ExcelReader:
     #     return self.__rows
 
 
-class MasterDocumentReader:
+class MasterDocumentHandler:
     """This class handles the operations related to master document"""
 
     def __init__(self, master_filename):
-        self.doc = docx.Document(master_filename)
-        self.__app_name = ''
+        self.master_doc = Document(master_filename)
 
-    def feed_application(self, app_data):
-        self.__app_name = app_data.app_name
-        logger.info('Creating document for application : ' + self.__app_name)
-        pass
+    def create_child_document(self):
+        app_doc = copy.copy(self.master_doc)
+        return app_doc
 
-    def save(self):
-        output_filename = 'output\\' + format_filename(self.__app_name) + '_child.docx'
-        logger.info(output_filename + ' created!')
-        self.doc.save(output_filename)
+    # https://www.oreilly.com/library/view/python-cookbook/0596001673/ch04s09.html
+    # https://www.safaribooksonline.com/videos/python-for-everyday/9781788621953/9781788621953-video5_5
+
+    @staticmethod
+    def save(app_name, docx_doc):
+        output_filename = 'output\\' + format_filename(app_name) + '.docx'
+        docx_doc.save(output_filename)
+        print('output file ' + output_filename + ' is created!')
 
