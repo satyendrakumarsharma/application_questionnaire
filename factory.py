@@ -16,43 +16,44 @@ class ApplicationFactory:
         print('>>[ROW]<< ' + app_name + ' : ' + app_question + ' : ' + app_answers)
 
         if is_empty(app_name) or is_empty(app_question):
-            print('^^^^ Empty Application questionnaire')
+            print('[Empty Application questionnaire]')
             return
 
-        question = ApplicationFactory.__fetch_question(app_question)
+        question = Question.get_question_by_value(app_question)
+        q_type = question.q_type
 
-        answers = []
-
-        # TODO for LargeText type of Question : Use the entire answer text (without splitting)
-
-        segregated_answers = [] if is_empty(app_answers) else app_answers.split(',')
-
-        for app_answer in segregated_answers:
-            answers.append(ApplicationFactory.__fetch_answer(app_answer))
+        if q_type == QuestionType.CHECKBOX:
+            answers = []
+            segregated_answers = [] if is_empty(app_answers) else app_answers.split(',')
+            for app_answer in segregated_answers:
+                answers.append(Answer.get_answer(app_answer))
+        else:
+            answers = app_answers
 
         app_data = ApplicationFactory.app_cache.get(app_name)
-
         if app_data is None:
             # a new app_data is needed only when it is not cached in dict
-            app_data = ApplicationData(app_name, question, answers)
+            app_data = ApplicationData(app_name)
             ApplicationFactory.app_cache.update({app_name: app_data})
-        else:
-            app_data.update_questionnaire(question, answers)
+
+        app_data.update_questionnaire(question, answers)
 
     @staticmethod
-    def __fetch_question(question_value):
-        question = Question.cache_value.get(question_value)
+    def create_question_answer_mapping(mapping):
+        q_id, q_value, ans_value, q_section, tag, q_type = mapping
+        print('>>[Question]<<' + q_id + ':' + q_value + ':' + ans_value + ':' + q_section + ':' + tag + ':' + q_type)
+        answer = ApplicationFactory.create_answer(ans_value, tag)
+        question = Question.cache_value.get(q_value)
         if question is None:
-            question = Question(123, question_value, QuestionType.LARGE_TEXT, '2.4', '<<$Application_Name>>')
-            # TODO Dynamically from Config
-        Question.cache_value.update({question_value: question})
-        return question
+            question = Question(q_id, q_value, str_to_type(q_type), q_section, tag)
+            Question.cache_value.update({q_value: question})
+        question.all_answers.append(answer)
 
     @staticmethod
-    def __fetch_answer(app_answer):
-        answer = Answer.answer_cache.get(app_answer)
+    def create_answer(answer_value, answer_tag):
+        answer = Answer.cache_value.get(answer_value)
         if answer is None:
-            answer = Answer(456, app_answer)
-            # TODO Dynamically from Config
-            Answer.answer_cache.update({app_answer: answer})
+            answer = Answer(0, answer_value, answer_tag)
+            Answer.cache_value.update({answer_value: answer})
         return answer
+

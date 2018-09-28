@@ -1,5 +1,6 @@
 
 import logging
+from model import QuestionType
 
 
 logging.basicConfig(level=logging.INFO, filename='logs\\info.log')
@@ -32,3 +33,10 @@ def format_filename(string):
     return filename
 
 
+def str_to_type(type_text):
+        type_dict = {
+            'LargeText': QuestionType.LARGE_TEXT,
+            'Checkbox': QuestionType.CHECKBOX,
+            'Radio': QuestionType.RADIO
+        }
+        return type_dict.get(type_text, QuestionType.LARGE_TEXT)
