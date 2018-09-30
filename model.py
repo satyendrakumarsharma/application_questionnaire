@@ -50,16 +50,22 @@ class Question:
 class Answer:
     """The answer"""
 
+    ans_id = 0
     cache_value = {}       # { app_answer_str: list( answer ) }
 
-    def __init__(self, ans_id, ans_value, ans_tag):
-        self.a_id = ans_id
-        self.answer = ans_value
+    def __init__(self, ans_value, ans_tag):
+        self.a_id = Answer.__gen_ans_id()
+        self.value = ans_value
         self.tag = ans_tag
 
     @staticmethod
     def get_answer(answer_value):
         return Answer.cache_value.get(answer_value)
+
+    @staticmethod
+    def __gen_ans_id():
+        Answer.ans_id += 1
+        return Answer.ans_id
 
 
 @unique
@@ -67,5 +73,3 @@ class QuestionType(Enum):
     LARGE_TEXT = 1
     CHECKBOX = 2
     RADIO = 3
-
-

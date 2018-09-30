@@ -53,7 +53,7 @@ class ApplicationFactory:
     def create_answer(answer_value, answer_tag):
         answer = Answer.cache_value.get(answer_value)
         if answer is None:
-            answer = Answer(0, answer_value, answer_tag)
+            answer = Answer(answer_value, answer_tag)
             Answer.cache_value.update({answer_value: answer})
         return answer
 

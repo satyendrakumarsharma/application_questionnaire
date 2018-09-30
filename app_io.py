@@ -39,15 +39,95 @@ class MasterDocumentHandler:
         self.master_doc = Document(master_filename)
 
     def create_child_document(self):
+        """This method creates and returns a copy of the master-document."""
         app_doc = copy.copy(self.master_doc)
-        return app_doc
+        doc_block = DocumentBlock(app_doc)
+        # return app_doc
+        return doc_block
+
+    @staticmethod
+    def save(app_name, doc_block):
+        output_filename = 'output\\' + format_filename(app_name) + '.docx'
+        doc_block.get_doc().save(output_filename)
+        print('output file ' + output_filename + ' is created!')
+
+
+class DocumentBlock:
+    style_h2 = 'Heading 2'
+    style_h4 = 'Heading 4'
+
+    def __init__(self, app_doc: Document):
+        self.__app_doc = app_doc
+        self.__paragraphs = [para for para in app_doc.paragraphs]
+
+        self.__doc_slices = []    # list( DocBlockSlice )
+        self.__create_block_slices(self.__paragraphs, DocumentBlock.style_h2, 0, len(self.__paragraphs))
+
+    def __create_block_slices(self, paragraphs, block_style, start_idx, end_idx):
+        para_idx = start_idx
+        prev_idx = 0
+        for para in paragraphs:
+            if para_idx > end_idx:
+                break
+            if para.style.name == block_style:
+                if prev_idx != 0:
+                    self.__doc_slices.append(self.DocBlockSlice(paragraphs, prev_idx, para_idx))
+                prev_idx = para_idx
+            para_idx += 1
+
+    def get_block_slices(self):
+        return self.__doc_slices
+
+    def get_doc(self):
+        return self.__app_doc
+
+    class DocBlockSlice:
+        def __init__(self, paragraphs, start_idx, end_idx):
+            self.__start_idx = start_idx
+            self.__end_idx = end_idx
+            self.__paragraph_slice = paragraphs[start_idx: end_idx]
+
+            self.__sub_doc_slices = []    # list( DocBlockSlice )
+            self.__create_block_slices(paragraphs, DocumentBlock.style_h4, self.__start_idx, self.__end_idx)
+
+            print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>[' + str(start_idx) + '] [' + str(end_idx) + ']')
+            for ps in self.__paragraph_slice:
+                print('####' + ps.text)
+            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+
+        def __create_block_slices(self, paragraphs, block_style, start_idx, end_idx):
+            para_idx = start_idx
+            prev_idx = 0
+            for para in paragraphs:
+                if para_idx > end_idx:
+                    break
+                if para.style.name == block_style:
+                    if prev_idx != 0:
+                        self.__sub_doc_slices.append(DocumentBlock.DocBlockSlice(paragraphs, prev_idx, para_idx))
+                    prev_idx = para_idx
+                para_idx += 1
+
+        def get_sub_slices(self):
+            return self.__sub_doc_slices
+
+        def contains(self, key):
+            for para in self.__paragraph_slice:
+                if key in para.text:
+                    return True
+            return False
+
+        def replace(self, old_element, new_element):
+            for para in self.__paragraph_slice:
+                if old_element in para.text:
+                    para.text = para.text.replace(old_element, new_element)
+
+        def remove(self):
+            for para in self.__paragraph_slice:
+                para.clear()
+                para.text = ''
+                p_elmt = para._element
+                p_elmt.getparent().remove(p_elmt)
+                p_elmt._p = p_elmt._element = None
 
     # https://www.oreilly.com/library/view/python-cookbook/0596001673/ch04s09.html
     # https://www.safaribooksonline.com/videos/python-for-everyday/9781788621953/9781788621953-video5_5
-
-    @staticmethod
-    def save(app_name, docx_doc):
-        output_filename = 'output\\' + format_filename(app_name) + '.docx'
-        docx_doc.save(output_filename)
-        print('output file ' + output_filename + ' is created!')
-
