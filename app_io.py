@@ -25,7 +25,6 @@ class ExcelReader:
             for ci in range(1, col_end):
                 row.append(str(self.__sheet.cell(row=ri, column=ci).value).strip())
             yield tuple(row)
-        # return rows
 
     # def get_all_rows(self):
     #     """This method provides the data from excel in the form of a List of Tuples"""
@@ -61,17 +60,17 @@ class DocumentBlock:
         self.__paragraphs = [para for para in app_doc.paragraphs]
 
         self.__doc_slices = []    # list( DocBlockSlice )
-        self.__create_block_slices(self.__paragraphs, DocumentBlock.style_h2, 0, len(self.__paragraphs))
+        self.__create_block_slices(DocumentBlock.style_h2, 0, len(self.__paragraphs))
 
-    def __create_block_slices(self, paragraphs, block_style, start_idx, end_idx):
+    def __create_block_slices(self, block_style, start_idx, end_idx):
         para_idx = start_idx
         prev_idx = 0
-        for para in paragraphs:
+        for para in self.__paragraphs:
             if para_idx > end_idx:
                 break
             if para.style.name == block_style:
                 if prev_idx != 0:
-                    self.__doc_slices.append(self.DocBlockSlice(paragraphs, prev_idx, para_idx))
+                    self.__doc_slices.append(self.DocBlockSlice(self.__paragraphs, prev_idx, para_idx))
                 prev_idx = para_idx
             para_idx += 1
 
@@ -125,9 +124,9 @@ class DocumentBlock:
             for para in self.__paragraph_slice:
                 para.clear()
                 para.text = ''
-                p_elmt = para._element
-                p_elmt.getparent().remove(p_elmt)
-                p_elmt._p = p_elmt._element = None
+                # p_elmt = para.__element
+                # p_elmt.getparent().remove(p_elmt)
+                # p_elmt._p = p_elmt._element = None
 
     # https://www.oreilly.com/library/view/python-cookbook/0596001673/ch04s09.html
     # https://www.safaribooksonline.com/videos/python-for-everyday/9781788621953/9781788621953-video5_5

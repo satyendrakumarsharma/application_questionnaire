@@ -13,9 +13,8 @@ def is_empty(string):
     This method verifies if the given string is empty
     '' ---> True
     None ---> True
-    'None' ---> True
     """
-    return string is None or not string.strip() or string == 'None'
+    return string is None or not string.strip()
 
 
 def format_filename(string):
