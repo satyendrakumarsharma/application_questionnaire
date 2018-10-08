@@ -108,12 +108,9 @@ class DocumentBlock:
         def remove(self):
             for para in self._paragraph_slice:
                 # print('REMOVING: ' + str(para.text))
+                pe = para._element
+                pe.getparent().remove(pe)
                 para._p.clear()
-                # para.clear()
-                # para.text = ''
-                # p_elmt = para._element
-                # p_elmt.getparent().remove(p_elmt)
-                # p_elmt._p = p_elmt._element = None
 
         @staticmethod
         def create_block_slices(para_for_slicing, block_style, block_slices):
