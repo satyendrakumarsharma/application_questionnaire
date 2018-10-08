@@ -2,12 +2,12 @@ from pathlib import Path
 from app_io import *
 from app_io import DocumentBlock
 from factory import *
+from utils import join_with_commas
 from docx import *
 from docx.document import *
 from docx.enum.style import *
 from docx.text import *
 from docx.text.paragraph import *
-
 
 p = Path('').resolve()
 
@@ -15,7 +15,7 @@ p = Path('').resolve()
 def configure_section_mapping():
     """Reads the configuration Excel file to generate and cache the question/answer objects."""
 
-    section_map = ExcelReader('resources\\section_mapping.xlsx', max_col=6)
+    section_map = ExcelReader('resources\\section_mapping.xlsx', max_col=7)
     for mapping in section_map.fetch_all_rows():
         ApplicationFactory.create_question_answer_mapping(mapping)
 
@@ -26,6 +26,7 @@ def process_data_input():
     for app_entry in user_input.fetch_all_rows():
         ApplicationFactory.create_app_data(app_entry)
 
+
 # for row in sheet.iter_rows(min_row=1, min_col=1, max_row=6, max_col=3):
 #     for cell in row:
 #         print(cell.value, end=" ")
@@ -35,7 +36,7 @@ def process_data_input():
 def process_applications():
     print('Processing Started.')
     mdh = MasterDocumentHandler('resources\\master_document.docx')
-    for app_name, app_data in ApplicationData.app_cache.items():
+    for app_name, app_data in ApplicationData.app_cache_items():
         print('Processing [' + app_name + ']')
         child_doc_block = mdh.create_child_document()
         doc_block_slices = child_doc_block.get_block_slices()
@@ -46,24 +47,37 @@ def process_applications():
             q_type = question.q_type
             answer = app_data.get_answers(question)
             if q_type == QuestionType.LARGE_TEXT:
-                process_large_text_question(question, answer, doc_block_slices)
+                if question.q_default == const.DEFAULT_QUESTION_OTHER:
+                    child_doc_block.replace(question.q_tag, answer)
+                else:
+                    process_large_text_question(question, answer, doc_block_slices)
+
             elif q_type == QuestionType.CHECKBOX:
                 process_checkbox_question(question, answer, doc_block_slices)
+                if question.q_default == const.DEFAULT_QUESTION_VALUE and const.DEFAULT_ANSWER_OTHER not in answer:
+                    child_doc_block.replace(question.q_tag, join_with_commas(answer, lambda a: a.value))
+
             elif q_type == QuestionType.RADIO:
                 process_radio_question(question, answer, doc_block_slices)
+
+        apply_tag_value(const.APP_NAME_TAG, app_name, child_doc_block)
 
         MasterDocumentHandler.save(app_name, child_doc_block)
         break
 
 
+def apply_tag_value(tag, value, doc_block: DocumentBlock):
+    doc_block.replace(tag, value)
+
+
 def process_large_text_question(question, answer, doc_block_slices):
     q_tag = question.q_tag
     for block_slice in doc_block_slices:
+        answer = question.q_default if is_empty(answer) else answer
         block_slice.replace(q_tag, answer)
 
 
 def process_checkbox_question(question, answers, doc_block_slices):
-    q_tag = question.q_tag
     for ans in question.all_answer_options:
         if ans in answers:
             # process the block of this answer
@@ -77,7 +91,6 @@ def process_checkbox_question(question, answers, doc_block_slices):
                 for sub_slices in block_slice.get_sub_slices():
                     if sub_slices.contains(ans.tag):
                         sub_slices.remove()
-    # TODO Use element tree of docx instead of slices.
 
     # for block_slice in doc_block_slices:
     #     if q_tag in para.text:
