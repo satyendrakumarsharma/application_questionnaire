@@ -41,7 +41,8 @@ class QuestionType(Enum):
 class Question:
     """The question"""
 
-    _cache_value = {}  # { app_question_str: question }
+    _cache_value = {}   # { app_question_str: question }
+    _cache_id = {}      # { app_question_id: question }
 
     def __init__(self, q_id: int, q_value: str, q_type: QuestionType, q_tag: str, q_default: str,
                  is_nullable=False):
@@ -52,15 +53,24 @@ class Question:
         self.q_default = q_default
         self.is_nullable = is_nullable
         self.all_answer_options = []
-        Question.cache_question_by_value(self.q_value, self)
+        Question._cache_question_by_value(self.q_value, self)
+        Question._cache_question_by_id(self.q_id, self)
 
     @staticmethod
-    def cache_question_by_value(question_value: str, question):
-        return Question._cache_value.update({question_value: question})
+    def _cache_question_by_value(question_value: str, question):
+        Question._cache_value.update({question_value: question})
 
     @staticmethod
     def get_question_by_value(question_value: str):
         return Question._cache_value.get(question_value)
+
+    @staticmethod
+    def _cache_question_by_id(question_id: int, question):
+        Question._cache_id.update({question_id: question})
+
+    @staticmethod
+    def get_question_by_id(question_id: int):
+        return Question._cache_id.get(question_id)
 
     @staticmethod
     def cache_items():

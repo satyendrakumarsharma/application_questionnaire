@@ -1,3 +1,4 @@
+import re
 import logging
 from model import QuestionType
 
@@ -29,6 +30,15 @@ def format_filename(string):
                        .replace('+', '')
                        for c in filename)
     return filename
+
+
+def replace_ignore(str_val, old, new):
+    pattern = re.compile(re.escape(old), re.IGNORECASE)
+    return pattern.sub(new, str_val)
+
+
+def wrap_padding(value):
+    return '##' + value + '##'
 
 
 def str_to_type(type_text):

@@ -43,7 +43,7 @@ class MasterDocumentHandler:
         self.master_doc = Document(master_filename)
 
     def create_child_document(self):
-        """This method creates and returns a copy of the master-document."""
+        """This method creates and returns 'DocumentBlock' object corresponding to a copy of the master-document."""
         app_doc = copy.copy(self.master_doc)
         doc_block = DocumentBlock(app_doc)
         # return app_doc
@@ -73,6 +73,7 @@ class DocumentBlock:
                 para.text = para.text.replace(old_val, new_val)
 
     def get_block_slices(self):
+        """This method provides a list of all the block-slices with style as H2"""
         return self._doc_slices
 
     def get_doc(self):

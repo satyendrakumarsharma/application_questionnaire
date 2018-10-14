@@ -47,15 +47,10 @@ def process_applications():
             q_type = question.q_type
             answer = app_data.get_answers(question)
             if q_type == QuestionType.LARGE_TEXT:
-                if question.q_default == const.DEFAULT_QUESTION_OTHER:
-                    child_doc_block.replace(question.q_tag, answer)
-                else:
-                    process_large_text_question(question, answer, doc_block_slices)
+                process_large_text_question(question, answer, doc_block_slices, child_doc_block)
 
             elif q_type == QuestionType.CHECKBOX:
-                process_checkbox_question(question, answer, doc_block_slices)
-                if question.q_default == const.DEFAULT_QUESTION_VALUE and const.DEFAULT_ANSWER_OTHER not in answer:
-                    child_doc_block.replace(question.q_tag, join_with_commas(answer, lambda a: a.value))
+                process_checkbox_question(question, answer, doc_block_slices, child_doc_block)
 
             elif q_type == QuestionType.RADIO:
                 process_radio_question(question, answer, doc_block_slices)
@@ -70,37 +65,57 @@ def apply_tag_value(tag, value, doc_block: DocumentBlock):
     doc_block.replace(tag, value)
 
 
-def process_large_text_question(question, answer, doc_block_slices):
+def process_large_text_question(question, answer, doc_block_slices, doc_block):
     q_tag = question.q_tag
-    for block_slice in doc_block_slices:
-        answer = question.q_default if is_empty(answer) else answer
-        block_slice.replace(q_tag, answer)
+    if question.q_default == const.DEFAULT_QUESTION_OTHER:
+        # this question is a follow-up for another checkbox type of question, which was answered as 'Other'
+        doc_block.replace(wrap_padding(question.q_tag), answer)
+    else:
+        for block_slice in doc_block_slices:
+            answer = question.q_default if is_empty(answer) else answer
+            block_slice.replace(q_tag, answer)
 
 
-def process_checkbox_question(question, answers, doc_block_slices):
-    for ans in question.all_answer_options:
-        if ans in answers:
+def process_checkbox_question(question, answers, doc_block_slices, doc_block):
+    for ans_opt in question.all_answer_options:
+        if ans_opt in answers:
             # process the block of this answer
             for block_slice in doc_block_slices:
                 for sub_slices in block_slice.get_sub_slices():
-                    if sub_slices.contains(ans.tag):
-                        sub_slices.replace(ans.tag, ans.value)
+                    if sub_slices.contains(ans_opt.tag):
+                        sub_slices.replace(ans_opt.tag, ans_opt.value)
         else:
-            # remove the block of this answer
+            # remove the unanswered block for this answer
             for block_slice in doc_block_slices:
                 for sub_slices in block_slice.get_sub_slices():
-                    if sub_slices.contains(ans.tag):
+                    if sub_slices.contains(ans_opt.tag):
                         sub_slices.remove()
 
-    # for block_slice in doc_block_slices:
-    #     if q_tag in para.text:
-    #         para.text = para.text.replace(q_tag, answers)
-    #     print('[C}' + para.text)
+    if question.q_default == const.DEFAULT_QUESTION_VALUE and const.DEFAULT_ANSWER_OTHER not in answers:
+        ans_commas = join_with_commas(answers, lambda a: a.value)
+        if 'other' in ans_commas.lower():
+            ans_commas = replace_ignore(ans_commas, 'other', 'Other (' + wrap_padding(question.q_tag) + ')')
+        doc_block.replace(question.q_tag, ans_commas)
 
 
 def process_radio_question(question, answer, doc_block_slices):
     q_tag = question.q_tag
-    # for block_slice in doc_block_slices:
-    #     if q_tag in para.text:
-    #         para.text = para.text.replace(q_tag, answer)
-    #     print('[R}' + para.text)
+    is_used = answer is not None and not is_empty(answer.value) and answer.value.lower() != 'no'
+
+    for ans_opt in question.all_answer_options:
+        if '$No' in ans_opt.tag and not is_used and answer is None:
+            answer = ans_opt
+
+    print('>>>>>>>>>>>>>>>>>>>>>>>>>' + answer.tag)
+
+    for block_slice in doc_block_slices:
+        if block_slice.contains(q_tag):
+            for sub_slices in block_slice.get_sub_slices():
+                if is_used and sub_slices.contains(question.q_tag):
+                    ans_val = answer.value if answer is not None and not is_empty(answer.value) and answer.value.lower() != 'yes' else 'Yes'
+                    sub_slices.replace(q_tag, ans_val)
+                elif not is_used and sub_slices.contains(answer.tag):
+                    sub_slices.replace(answer.tag, 'No')
+                else:
+                    sub_slices.remove()
+            break
