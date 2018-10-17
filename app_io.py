@@ -53,7 +53,7 @@ class MasterDocumentHandler:
     def save(app_name, doc_block):
         output_filename = 'output\\' + format_filename(app_name) + '.docx'
         doc_block.get_doc().save(output_filename)
-        print('output file ' + output_filename + ' is created!')
+        print('Output file [' + output_filename + '] is created!')
 
 
 class DocumentBlock:

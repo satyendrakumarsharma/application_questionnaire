@@ -58,7 +58,7 @@ def process_applications():
         apply_tag_value(const.APP_NAME_TAG, app_name, child_doc_block)
 
         MasterDocumentHandler.save(app_name, child_doc_block)
-        break
+        break   # TODO Remove this 'break'
 
 
 def apply_tag_value(tag, value, doc_block: DocumentBlock):
@@ -83,7 +83,8 @@ def process_checkbox_question(question, answers, doc_block_slices, doc_block):
             for block_slice in doc_block_slices:
                 for sub_slices in block_slice.get_sub_slices():
                     if sub_slices.contains(ans_opt.tag):
-                        sub_slices.replace(ans_opt.tag, ans_opt.value)
+                        ans_val = 'None' if ans_opt.is_none else ans_opt.value
+                        sub_slices.replace(ans_opt.tag, ans_val)
         else:
             # remove the unanswered block for this answer
             for block_slice in doc_block_slices:
@@ -91,7 +92,7 @@ def process_checkbox_question(question, answers, doc_block_slices, doc_block):
                     if sub_slices.contains(ans_opt.tag):
                         sub_slices.remove()
 
-    if question.q_default == const.DEFAULT_QUESTION_VALUE and const.DEFAULT_ANSWER_OTHER not in answers:
+    if question.q_default == const.DEFAULT_QUESTION_VALUE_ALL and const.DEFAULT_ANSWER_OTHER not in answers:
         ans_commas = join_with_commas(answers, lambda a: a.value)
         if 'other' in ans_commas.lower():
             ans_commas = replace_ignore(ans_commas, 'other', 'Other (' + wrap_padding(question.q_tag) + ')')
@@ -100,22 +101,47 @@ def process_checkbox_question(question, answers, doc_block_slices, doc_block):
 
 def process_radio_question(question, answer, doc_block_slices):
     q_tag = question.q_tag
-    is_used = answer is not None and not is_empty(answer.value) and answer.value.lower() != 'no'
+    is_yes = answer is not None and not is_empty(answer) and answer.lower() != 'no' and answer.lower() != 'none'
+
+    ans_yes = None
+    ans_no = None
+    for ans_opt in question.all_answer_options:
+        if '$No' in ans_opt.tag:
+            ans_no = ans_opt
+        else:
+            ans_yes = ans_opt
+            ans_yes.value = answer if is_yes else ans_yes.value
+
+    answer = ans_yes if is_yes else ans_no
 
     for ans_opt in question.all_answer_options:
-        if '$No' in ans_opt.tag and not is_used and answer is None:
-            answer = ans_opt
+        if ans_opt.a_id == answer.a_id:
+            # process the block of this answer
+            for block_slice in doc_block_slices:
+                for sub_slices in block_slice.get_sub_slices():
+                    if sub_slices.contains(ans_opt.tag):
+                        # if is_yes:
+                        #     ans_val = answer.value if answer is not None and not is_empty(answer.value) and answer.value.lower() != 'yes' else 'Yes'
+                        # else:
+                        #     ans_val = 'No'
+                        sub_slices.replace(ans_opt.tag, answer.value)
+        else:
+            # remove the unanswered block for this answer
+            for block_slice in doc_block_slices:
+                for sub_slices in block_slice.get_sub_slices():
+                    if sub_slices.contains(ans_opt.tag):
+                        sub_slices.remove()
 
     print('>>>>>>>>>>>>>>>>>>>>>>>>>' + answer.tag)
 
-    for block_slice in doc_block_slices:
-        if block_slice.contains(q_tag):
-            for sub_slices in block_slice.get_sub_slices():
-                if is_used and sub_slices.contains(question.q_tag):
-                    ans_val = answer.value if answer is not None and not is_empty(answer.value) and answer.value.lower() != 'yes' else 'Yes'
-                    sub_slices.replace(q_tag, ans_val)
-                elif not is_used and sub_slices.contains(answer.tag):
-                    sub_slices.replace(answer.tag, 'No')
-                else:
-                    sub_slices.remove()
-            break
+    # for block_slice in doc_block_slices:
+    #     if block_slice.contains(q_tag):
+    #         for sub_slices in block_slice.get_sub_slices():
+    #             if is_yes and sub_slices.contains(ans_yes.tag):
+    #                 ans_val = answer.value if answer is not None and not is_empty(answer.value) and answer.value.lower() != 'yes' else 'Yes'
+    #                 sub_slices.replace(q_tag, ans_val)
+    #             elif not is_yes and sub_slices.contains(ans_no.tag):
+    #                 sub_slices.replace(answer.tag, 'No')
+    #             else:
+    #                 sub_slices.remove()
+    #         break   # the targeted H2 block processed, no need to search further

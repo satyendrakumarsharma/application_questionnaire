@@ -7,12 +7,17 @@ class Answer:
 
     _ans_id = 0
     _cache_value = {}  # { app_answer_str: list( answer ) }
+    _cache_id = {}  # { app_answer_id: list( answer ) }
 
-    def __init__(self, ans_value, ans_tag):
+    def __init__(self, ans_value, ans_tag, cache_id=False, is_none=None):
         self.a_id = Answer._gen_ans_id()
         self.value = ans_value
         self.tag = ans_tag
-        Answer.cache_answer_by_value(self.value, self)
+        self.is_none = is_none is not None and is_none
+        if cache_id:
+            Answer.cache_answer_by_id(self.a_id, self)
+        else:
+            Answer.cache_answer_by_value(self.value, self)
 
     @staticmethod
     def cache_answer_by_value(answer_value, answer):
@@ -21,6 +26,14 @@ class Answer:
     @staticmethod
     def get_answer_by_value(answer_value):
         return Answer._cache_value.get(answer_value)
+
+    @staticmethod
+    def cache_answer_by_id(answer_id, answer):
+        return Answer._cache_id.update({answer_id: answer})
+
+    @staticmethod
+    def get_answer_by_id(answer_id):
+        return Answer._cache_id.get(answer_id)
 
     @staticmethod
     def _gen_ans_id():
