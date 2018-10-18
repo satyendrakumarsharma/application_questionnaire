@@ -17,12 +17,7 @@ class DocumentBlock:
         self._paragraphs = [para for para in app_doc.paragraphs]
         self._doc_slices = []    # list( DocBlockSlice )
         DocumentBlock.DocBlockSlice.create_block_slices(self._paragraphs, DocumentBlock.style_h2, self._doc_slices)
-
-        for sds in self._doc_slices:
-            print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-            for ps in sds._paragraph_slice:
-                print('#' + 'H2' + '#' + ps.text)
-            print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+        # print_slices(self._doc_slices)
 
     def replace(self, old_val, new_val):
         """This method scans the entire document to replace the given value."""
@@ -41,14 +36,8 @@ class DocumentBlock:
         def __init__(self, paragraph_slice):
             self._paragraph_slice = paragraph_slice
             self._sub_doc_slices = []    # list( DocBlockSlice )
-            # self._create_block_slices(self._paragraph_slice, DocumentBlock.style_h4, 0, len(self._paragraph_slice))
             DocumentBlock.DocBlockSlice.create_block_slices(self._paragraph_slice, DocumentBlock.style_h4, self._sub_doc_slices)
-
-            for sds in self._sub_doc_slices:
-                print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-                for ps in sds._paragraph_slice:
-                    print('#' + 'H4' + '#' + ps.text)
-                print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+            # print_slices(self._sub_doc_slices)
 
         def get_sub_slices(self):
             return self._sub_doc_slices
@@ -76,11 +65,13 @@ class DocumentBlock:
             para_idx = prev_idx = 0
             end_idx = len(para_for_slicing)
             para: Paragraph
+            is_any_block_found = False
             for para in para_for_slicing:
-                if para_idx > end_idx:
+                if para_idx == end_idx - 1 and is_any_block_found:
+                    block_slices.append(DocumentBlock.DocBlockSlice(para_for_slicing[prev_idx: para_idx]))
                     break
                 if para.style.name == block_style:
-                    # print(para.part._element.body)
+                    is_any_block_found = True
                     if prev_idx != 0:
                         block_slices.append(DocumentBlock.DocBlockSlice(para_for_slicing[prev_idx: para_idx]))
                     prev_idx = para_idx
@@ -89,3 +80,11 @@ class DocumentBlock:
     # https://www.oreilly.com/library/view/python-cookbook/0596001673/ch04s09.html
     # https://www.safaribooksonline.com/videos/python-for-everyday/9781788621953/9781788621953-video5_5
     # >>> https://stackoverflow.com/questions/24965042/python-docx-insertion-point
+
+
+def print_slices(doc_slices):
+    for sds in doc_slices:
+        print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        for ps in sds._paragraph_slice:
+            print('#' + 'H4' + '#' + ps.text)
+        print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<')

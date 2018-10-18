@@ -34,31 +34,33 @@ def process_data_input():
 
 
 def process_applications():
-    print('Processing Started.')
+    print('\nProcessing Started\n__________________________')
     mdh = MasterDocumentHandler('resources\\master_document.docx')
     for app_name, app_data in ApplicationData.app_cache_items():
-        print('Processing [' + app_name + ']')
+        print('Processing application: ' + app_name)
         child_doc_block = mdh.create_child_document()
         doc_block_slices = child_doc_block.get_block_slices()
-        print('Creating child document for application : ' + app_name)
+        print('Creating child document...')
         # paragraphs = (para for para in child_doc.paragraphs)
 
         for question in Question.cache_values():
             q_type = question.q_type
             answer = app_data.get_answers(question)
-            if q_type == QuestionType.LARGE_TEXT:
-                process_large_text_question(question, answer, doc_block_slices, child_doc_block)
+            try:
+                if q_type == QuestionType.LARGE_TEXT:
+                    process_large_text_question(question, answer, doc_block_slices, child_doc_block)
 
-            elif q_type == QuestionType.CHECKBOX:
-                process_checkbox_question(question, answer, doc_block_slices, child_doc_block)
+                elif q_type == QuestionType.CHECKBOX:
+                    process_checkbox_question(question, answer, doc_block_slices, child_doc_block)
 
-            elif q_type == QuestionType.RADIO:
-                process_radio_question(question, answer, doc_block_slices)
+                elif q_type == QuestionType.RADIO:
+                    process_radio_question(question, answer, doc_block_slices)
+            except TypeError:
+                print('[' + app_name + '] Due to incorrect details in INPUT, this question could not be processed')
 
         apply_tag_value(const.APP_NAME_TAG, app_name, child_doc_block)
 
         MasterDocumentHandler.save(app_name, child_doc_block)
-        break   # TODO Remove this 'break'
 
 
 def apply_tag_value(tag, value, doc_block: DocumentBlock):
@@ -131,17 +133,3 @@ def process_radio_question(question, answer, doc_block_slices):
                 for sub_slices in block_slice.get_sub_slices():
                     if sub_slices.contains(ans_opt.tag):
                         sub_slices.remove()
-
-    print('>>>>>>>>>>>>>>>>>>>>>>>>>' + answer.tag)
-
-    # for block_slice in doc_block_slices:
-    #     if block_slice.contains(q_tag):
-    #         for sub_slices in block_slice.get_sub_slices():
-    #             if is_yes and sub_slices.contains(ans_yes.tag):
-    #                 ans_val = answer.value if answer is not None and not is_empty(answer.value) and answer.value.lower() != 'yes' else 'Yes'
-    #                 sub_slices.replace(q_tag, ans_val)
-    #             elif not is_yes and sub_slices.contains(ans_no.tag):
-    #                 sub_slices.replace(answer.tag, 'No')
-    #             else:
-    #                 sub_slices.remove()
-    #         break   # the targeted H2 block processed, no need to search further

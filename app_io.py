@@ -40,7 +40,7 @@ class MasterDocumentHandler:
 
     def create_child_document(self):
         """This method creates and returns 'DocumentBlock' object corresponding to a copy of the master-document."""
-        app_doc = copy.copy(self.master_doc)
+        app_doc = copy.deepcopy(self.master_doc)
         doc_block = DocumentBlock(app_doc)
         # return app_doc
         return doc_block
@@ -49,5 +49,4 @@ class MasterDocumentHandler:
     def save(app_name, doc_block):
         output_filename = 'output\\' + format_filename(app_name) + '.docx'
         doc_block.get_doc().save(output_filename)
-        print('Output file [' + output_filename + '] is created!')
-
+        print('Output file [' + output_filename + '] is created.', end='\n__________________________\n')
