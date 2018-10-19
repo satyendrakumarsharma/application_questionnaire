@@ -1,5 +1,7 @@
 import openpyxl
 import copy
+import os
+import win32com.client
 from docx import *
 from utils import *
 from slice import DocumentBlock
@@ -49,4 +51,9 @@ class MasterDocumentHandler:
     def save(app_name, doc_block):
         output_filename = 'output\\' + format_filename(app_name) + '.docx'
         doc_block.get_doc().save(output_filename)
+        word = win32com.client.DispatchEx("Word.Application")
+        doc = word.Documents.Open(os.path.abspath(output_filename))
+        doc.TablesOfContents(1).Update()
+        doc.Close(SaveChanges=True)
+        word.Quit()
         print('Output file [' + output_filename + '] is created.', end='\n__________________________\n')

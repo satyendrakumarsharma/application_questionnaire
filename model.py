@@ -6,8 +6,8 @@ class Answer:
     """The answer"""
 
     _ans_id = 0
-    _cache_value = {}  # { app_answer_str: list( answer ) }
-    _cache_id = {}  # { app_answer_id: list( answer ) }
+    _cache_value = {}   # { app_answer_str: Answer }
+    _cache_id = {}      # { app_answer_id: Answer }
 
     def __init__(self, ans_value, ans_tag, cache_id=False, is_none=None):
         self.a_id = Answer._gen_ans_id()
@@ -106,7 +106,7 @@ class Question:
 class ApplicationData:
     """Represents each application and contains the corresponding questions and their answers."""
 
-    _app_cache = {}
+    _app_cache = {}     # { app_name : ApplicationData }
 
     def __init__(self, app_name: str):
         self._app_id = -1

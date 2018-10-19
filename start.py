@@ -2,7 +2,7 @@ from process import *
 
 
 if __name__ == '__main__':
-    print('Started.')
+    print('\n~~~~~~ Application Questionnaire ~~~~~~\n')
 
     configure_section_mapping()
 
@@ -10,4 +10,4 @@ if __name__ == '__main__':
 
     process_applications()
 
-    print('Completed Successfully.')
+    print('\n****** Completed Successfully ******')
