@@ -15,7 +15,7 @@ p = Path('').resolve()
 def configure_section_mapping():
     """Reads the configuration Excel file to generate and cache the question/answer objects."""
 
-    section_map = ExcelReader('resources\\section_mapping.xlsx', max_col=7)
+    section_map = ExcelReader('resources\\section_mapping.xlsx', max_col=6)
     for mapping in section_map.fetch_all_rows():
         ApplicationFactory.create_question_answer_mapping(mapping)
 
@@ -41,7 +41,6 @@ def process_applications():
         child_doc_block = mdh.create_child_document()
         doc_block_slices = child_doc_block.get_block_slices()
         print('Creating child document...')
-        # paragraphs = (para for para in child_doc.paragraphs)
 
         for question in Question.cache_values():
             q_type = question.q_type
@@ -56,7 +55,7 @@ def process_applications():
                 elif q_type == QuestionType.RADIO:
                     process_radio_question(question, answer, doc_block_slices)
             except TypeError:
-                print('[' + app_name + '] Due to incorrect details in INPUT, this question could not be processed')
+                print('[' + app_name + '] Due to incorrect details in INPUT, this question could not be processed.')
 
         apply_tag_value(const.APP_NAME_TAG, app_name, child_doc_block)
 
@@ -85,8 +84,7 @@ def process_checkbox_question(question, answers, doc_block_slices, doc_block):
             for block_slice in doc_block_slices:
                 for sub_slices in block_slice.get_sub_slices():
                     if sub_slices.contains(ans_opt.tag):
-                        ans_val = 'None' if ans_opt.is_none else ans_opt.value
-                        sub_slices.replace(ans_opt.tag, ans_val)
+                        sub_slices.replace(ans_opt.tag, ans_opt.value)
         else:
             # remove the unanswered block for this answer
             for block_slice in doc_block_slices:
@@ -94,7 +92,7 @@ def process_checkbox_question(question, answers, doc_block_slices, doc_block):
                     if sub_slices.contains(ans_opt.tag):
                         sub_slices.remove()
 
-    if question.q_default == const.DEFAULT_QUESTION_VALUE_ALL and const.DEFAULT_ANSWER_OTHER not in answers:
+    if const.DEFAULT_QUESTION_VALUE_ALL in question.q_default and const.DEFAULT_ANSWER_OTHER not in answers:
         ans_commas = join_with_commas(answers, lambda a: a.value)
         if 'other' in ans_commas.lower():
             ans_commas = replace_ignore(ans_commas, 'other', 'Other (' + wrap_padding(question.q_tag) + ')')
@@ -102,7 +100,6 @@ def process_checkbox_question(question, answers, doc_block_slices, doc_block):
 
 
 def process_radio_question(question, answer, doc_block_slices):
-    q_tag = question.q_tag
     is_yes = answer is not None and not is_empty(answer) and answer.lower() != 'no' and answer.lower() != 'none'
 
     ans_yes = None
@@ -122,10 +119,6 @@ def process_radio_question(question, answer, doc_block_slices):
             for block_slice in doc_block_slices:
                 for sub_slices in block_slice.get_sub_slices():
                     if sub_slices.contains(ans_opt.tag):
-                        # if is_yes:
-                        #     ans_val = answer.value if answer is not None and not is_empty(answer.value) and answer.value.lower() != 'yes' else 'Yes'
-                        # else:
-                        #     ans_val = 'No'
                         sub_slices.replace(ans_opt.tag, answer.value)
         else:
             # remove the unanswered block for this answer

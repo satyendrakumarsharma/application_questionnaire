@@ -1,3 +1,4 @@
+import constants as const
 from enum import Enum, unique
 from typing import List
 
@@ -9,13 +10,12 @@ class Answer:
     _cache_value = {}   # { app_answer_str: Answer }
     _cache_id = {}      # { app_answer_id: Answer }
 
-    def __init__(self, ans_value, ans_tag, cache_id=False, is_none=None):
+    def __init__(self, ans_value, ans_tag, cache_id=None):
         self.a_id = Answer._gen_ans_id()
         self.value = ans_value
         self.tag = ans_tag
-        self.is_none = is_none is not None and is_none
-        if cache_id:
-            Answer.cache_answer_by_id(self.a_id, self)
+        if cache_id is not None:
+            Answer.cache_answer_by_id(cache_id, self)
         else:
             Answer.cache_answer_by_value(self.value, self)
 
@@ -57,14 +57,13 @@ class Question:
     _cache_value = {}   # { app_question_str: question }
     _cache_id = {}      # { app_question_id: question }
 
-    def __init__(self, q_id: int, q_value: str, q_type: QuestionType, q_tag: str, q_default: str,
-                 is_nullable=False):
+    def __init__(self, q_id: int, q_value: str, q_type: QuestionType, q_tag: str, q_default: str=''):
         self.q_id = q_id
         self.q_value = q_value
         self.q_type = q_type
         self.q_tag = q_tag
         self.q_default = q_default
-        self.is_nullable = is_nullable
+        self.is_nullable = const.DEFAULT_QUESTION_VALUE_NONE in q_default
         self.all_answer_options = []
         Question._cache_question_by_value(self.q_value, self)
         Question._cache_question_by_id(self.q_id, self)

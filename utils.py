@@ -17,6 +17,15 @@ def is_empty(string):
     return string is None or not string.strip() or string == 'None'
 
 
+def is_empty_with_none(string):
+    """
+    This method verifies if the given string is empty
+    '' ---> True
+    None ---> True
+    """
+    return string is None or not string.strip()
+
+
 def format_filename(string):
     filename = string.replace(' ', '_')
     filename = ''.join(c
