@@ -2,6 +2,7 @@ import openpyxl
 import copy
 import os
 import win32com.client
+import constants
 from docx import *
 from utils import *
 from slice import DocumentBlock
@@ -53,6 +54,14 @@ class MasterDocumentHandler:
         doc_block.get_doc().save(output_filename)
         word = win32com.client.DispatchEx("Word.Application")
         doc = word.Documents.Open(os.path.abspath(output_filename))
+
+        # canvas = word.ActiveDocument.Shapes(1)
+        # for item in canvas.CanvasItems:
+        #     print(item) #.TextFrame.TextRange.Text)
+
+        hdr_text = 'ACTIVE DIRECTORY-' + app_name + ' MIGRATION READINESS'
+        word.ActiveDocument.Sections(1).Headers(win32com.client.constants.wdHeaderFooterPrimary).Range.Text = hdr_text
+        word.ActiveDocument.Save()
         doc.TablesOfContents(1).Update()
         doc.Close(SaveChanges=True)
         word.Quit()
