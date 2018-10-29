@@ -2,7 +2,7 @@ import openpyxl
 import copy
 import os
 import win32com.client
-import constants
+from win32com.client import constants as const
 from docx import *
 from utils import *
 from slice import DocumentBlock
@@ -52,17 +52,19 @@ class MasterDocumentHandler:
     def save(app_name, doc_block):
         output_filename = 'output\\' + format_filename(app_name) + '.docx'
         doc_block.get_doc().save(output_filename)
-        word = win32com.client.DispatchEx("Word.Application")
+
+        # word = win32com.client.DispatchEx("Word.Application")
+        word = win32com.client.gencache.EnsureDispatch("Word.Application")
         doc = word.Documents.Open(os.path.abspath(output_filename))
 
-        # canvas = word.ActiveDocument.Shapes(1)
-        # for item in canvas.CanvasItems:
-        #     print(item) #.TextFrame.TextRange.Text)
-
-        hdr_text = 'ACTIVE DIRECTORY-' + app_name + ' MIGRATION READINESS'
-        word.ActiveDocument.Sections(1).Headers(win32com.client.constants.wdHeaderFooterPrimary).Range.Text = hdr_text
-        word.ActiveDocument.Save()
-        doc.TablesOfContents(1).Update()
-        doc.Close(SaveChanges=True)
-        word.Quit()
+        try:
+            hdr_text = 'ACTIVE DIRECTORY-' + app_name + ' MIGRATION READINESS'
+            word.ActiveDocument.Sections(1).Headers(const.wdHeaderFooterPrimary).Range.Text = hdr_text
+            word.ActiveDocument.Save()
+            doc.TablesOfContents(1).Update()
+        except Exception:
+            print('Failed to decorate the document.')
+        finally:
+            doc.Close(SaveChanges=True)
+            word.Quit()
         print('Output file [' + output_filename + '] is created.', end='\n__________________________\n')
