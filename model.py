@@ -63,7 +63,7 @@ class Question:
         self.q_type = q_type
         self.q_tag = q_tag
         self.q_default = q_default
-        self.is_nullable = const.DEFAULT_QUESTION_VALUE_NONE in q_default
+        self.use_id = const.DEFAULT_QUESTION_VALUE_NONE in q_default or const.DEFAULT_QUESTION_VALUE_OTHER in q_default
         self.all_answer_options = []
         Question._cache_question_by_value(self.q_value, self)
         Question._cache_question_by_id(self.q_id, self)
