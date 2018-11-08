@@ -94,8 +94,8 @@ def process_checkbox_question(question, answers, doc_block_slices, doc_block):
 
     if const.DEFAULT_QUESTION_VALUE_ALL in question.q_default and const.DEFAULT_ANSWER_OTHER not in answers:
         ans_commas = join_with_commas(answers, lambda a: a.value)
-        if 'other' in ans_commas.lower():
-            ans_commas = replace_ignore(ans_commas, 'other', 'Other (' + wrap_padding(question.q_tag) + ')')
+        # if 'other' in ans_commas.lower():
+        #     ans_commas = replace_ignore(ans_commas, 'other', 'Other (' + wrap_padding(question.q_tag) + ')')
         doc_block.replace(question.q_tag, ans_commas)
 
 

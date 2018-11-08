@@ -21,7 +21,7 @@ class ApplicationFactory:
             question.q_tag = tag
         elif q_type == QuestionType.CHECKBOX:
             answer = ApplicationFactory._create_answer(ans_value, tag, str(q_id) + ans_value) \
-                if question.is_nullable else ApplicationFactory._create_answer(ans_value, tag)
+                if question.use_id else ApplicationFactory._create_answer(ans_value, tag)
             question.all_answer_options.append(answer)
         elif q_type == QuestionType.RADIO:
             answer = ApplicationFactory._create_answer(ans_value, tag, str(q_id) + ans_value)
@@ -58,7 +58,7 @@ class ApplicationFactory:
             answers = []        # [ Answer ]
             segregated_answers = [] if is_empty_with_none(app_answers) else app_answers.split(',')
             for individual_answer in segregated_answers:
-                if question.is_nullable:
+                if question.use_id:
                     answers.append(Answer.get_answer_by_id(str(question.q_id) + individual_answer))
                 else:
                     answers.append(Answer.get_answer_by_value(individual_answer))
