@@ -6,6 +6,7 @@ from win32com.client import constants as const
 from docx import *
 from utils import *
 from slice import DocumentBlock
+import constants as con
 
 
 class ExcelReader:
@@ -58,6 +59,10 @@ class MasterDocumentHandler:
         doc = word.Documents.Open(os.path.abspath(output_filename))
 
         try:
+            word.Selection.Find.Text = con.APP_NAME_TAG
+            word.Selection.Find.Replacement.Text = app_name
+            word.Selection.Find.Execute(Replace=2, Forward=True)
+
             hdr_text = 'ACTIVE DIRECTORY-' + app_name + ' MIGRATION READINESS'
             word.ActiveDocument.Sections(1).Headers(const.wdHeaderFooterPrimary).Range.Text = hdr_text
             word.ActiveDocument.Save()

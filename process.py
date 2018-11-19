@@ -47,7 +47,7 @@ def process_applications():
             answer = app_data.get_answers(question)
             try:
                 if q_type == QuestionType.LARGE_TEXT:
-                    process_large_text_question(question, answer, doc_block_slices, child_doc_block)
+                    process_large_text_question(question, answer, doc_block_slices, child_doc_block, app_name)
 
                 elif q_type == QuestionType.CHECKBOX:
                     process_checkbox_question(question, answer, doc_block_slices, child_doc_block)
@@ -57,24 +57,22 @@ def process_applications():
             except TypeError:
                 print('[' + app_name + '] Due to incorrect details in INPUT, this question could not be processed.')
 
-        apply_tag_value(const.APP_NAME_TAG, app_name, child_doc_block)
-
         MasterDocumentHandler.save(app_name, child_doc_block)
 
 
-def apply_tag_value(tag, value, doc_block: DocumentBlock):
-    doc_block.replace(tag, value)
-
-
-def process_large_text_question(question, answer, doc_block_slices, doc_block):
+def process_large_text_question(question, answer, doc_block_slices, doc_block, app_name):
     q_tag = question.q_tag
     if question.q_default == const.DEFAULT_QUESTION_OTHER:
         # this question is a follow-up for another checkbox type of question, which was answered as 'Other'
         doc_block.replace(wrap_padding(question.q_tag), answer)
     else:
         for block_slice in doc_block_slices:
-            answer = question.q_default if is_empty(answer) else answer
-            block_slice.replace(q_tag, answer)
+            if is_empty(answer):
+                answer = question.q_default
+                block_slice.replace(q_tag, answer)
+                block_slice.replace(const.APP_NAME_TAG, app_name)
+            else:
+                block_slice.replace(q_tag, answer)
 
 
 def process_checkbox_question(question, answers, doc_block_slices, doc_block):
